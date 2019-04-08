@@ -1,0 +1,15 @@
+{
+    "_comment": "ui: gui or console",
+    "ui": "console",
+
+    "console": {
+    "isPrint": false,
+    "inputFile": "tests/01.txt"
+    },
+
+    "gui": {
+        "gridSize": [50,50],
+        "cellLiveColor" : "green",
+        "cellDeadColor" : "white"
+    }
+}

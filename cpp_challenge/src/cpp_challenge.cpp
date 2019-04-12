@@ -119,7 +119,7 @@ int find_longest_path(const std::vector<std::vector<char>> &maze, std::vector<st
     // Cell directions
     int upper = 1 + find_longest_path(maze, visited, upper_path, i - 1, j);
     int lower = 1 + find_longest_path(maze, visited, lower_path, i + 1, j);
-    int left  = 1 + find_longest_path(maze, visited, left_path, i, j - 1);
+    int left  = 1 + find_longest_path(maze, visited, left_path,  i, j - 1);
     int right = 1 + find_longest_path(maze, visited, right_path, i, j + 1);
 
     std::vector<int> max_vec = {upper, lower, left, right};

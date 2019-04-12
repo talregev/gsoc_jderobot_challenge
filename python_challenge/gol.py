@@ -9,17 +9,20 @@ class Board:
     def __init__(self):
         self.board = np.array([[]])
         self.is_print = False
-        self.LIVE_CELL_COLOR = "green"
-        self.DEAD_CELL_COLOR = "white"
+        self.LIVE_CELL_COLOR    = "green"
+        self.DEAD_CELL_COLOR    = "white"
+        self.CELL_BORDER_COLOR  = "black"
 
     def __str__(self):
         return self.board.__str__()
 
     def create(self, N, M):
-        self.board = np.zeros((N, M), dtype=int)
-        win = GridWindow(N, M)
-        win.LIVE_CELL_COLOR = self.LIVE_CELL_COLOR
-        win.DEAD_CELL_COLOR = self.DEAD_CELL_COLOR
+        win = GridWindow(N, M, self.board, self.LIVE_CELL_COLOR, self.DEAD_CELL_COLOR, self.CELL_BORDER_COLOR)
+        Gtk.StyleContext.add_provider_for_screen(
+            Gdk.Screen.get_default(),
+            win.provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+        )
         win.set_position(Gtk.WindowPosition.CENTER)
         win.set_type_hint(Gdk.WindowTypeHint.MENU)
         win.connect("delete-event", Gtk.main_quit)
@@ -37,8 +40,9 @@ class Board:
             self.read(input_file)
         if(ui == "gui"):
             gui = data["gui"]
-            self.LIVE_CELL_COLOR = gui["cellLiveColor"]
-            self.DEAD_CELL_COLOR = gui["cellDeadColor"]
+            self.LIVE_CELL_COLOR    = gui["cellLiveColor"]
+            self.DEAD_CELL_COLOR    = gui["cellDeadColor"]
+            self.CELL_BORDER_COLOR  = gui["cellBorderColor"]
             N, M = gui["gridSize"]
             self.create(N, M)
 
@@ -71,25 +75,47 @@ class Board:
 
 
 class GridWindow(Gtk.Window):
-    def __init__(self, N, M):
+    def __init__(self, N, M, board, LIVE_CELL_COLOR, DEAD_CELL_COLOR, CELL_BORDER_COLOR):
 
-        self.LIVE_CELL_COLOR = "green"
-        self.DEAD_CELL_COLOR = "white"
+        self.LIVE_CELL_COLOR    = LIVE_CELL_COLOR
+        self.DEAD_CELL_COLOR    = DEAD_CELL_COLOR
+        self.CELL_BORDER_COLOR  = CELL_BORDER_COLOR
         self.N = N
         self.M = M
+        if(not board.size == 0):
+            if(board.size <= N*M):
+                bN, bM = board.shape
+                if(bN < N and bM < M):
+                    self.board = board
+                    self.board = np.append(self.board, np.zeros((N-bN, bM), dtype=int), axis=0)
+                    self.board = np.append(self.board, np.zeros((N,  M-bM), dtype=int), axis=1)
+                else:
+                    self.board = np.append(board, np.zeros(N*M-board.size, dtype=int))
+                self.board.shape = (N, M)
+            else:
+                bN, bM = board.shape
+                bN = min(bN, N)
+                bM = min(bM, M)
+                self.board = board[0:bN, 0:bM]
+        else:
+            self.board = np.zeros((N, M), dtype=int)
 
         Gtk.Window.__init__(self, title="Conway's Game of Life")
         grid = Gtk.Grid()
         self.add(grid)
         self.labels = np.empty((N, M), dtype=object)
-        self.board  = np.zeros((N, M), dtype=int)
+
+        self.provider = Gtk.CssProvider()
+        css_str = '#cell_label {\
+        border: 1px solid ' + self.CELL_BORDER_COLOR + '; \
+        }'
+        self.provider.load_from_data(css_str.encode('utf-8'))
 
         for i in range(N):
             for j in range(M):
                 label = Gtk.Label("        ")
-                color = Gdk.color_parse(self.DEAD_CELL_COLOR)
-                rgba = Gdk.RGBA.from_color(color)
-                label.override_background_color(0, rgba)
+                label.set_name('cell_label')
+                self.set_color(label, self.board[i][j])
                 event_box = Gtk.EventBox()
                 event_box.add(label)
                 event_box.connect("button-press-event", self._on_click, i, j)

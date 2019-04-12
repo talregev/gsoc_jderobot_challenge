@@ -9,7 +9,8 @@
 
     "gui": {
         "gridSize": [50,50],
-        "cellLiveColor" : "green",
-        "cellDeadColor" : "white"
+        "cellLiveColor"  : "green",
+        "cellDeadColor"  : "white",
+        "cellBorderColor": "black"
     }
 }

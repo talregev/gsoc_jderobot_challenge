@@ -86,17 +86,24 @@ class GridWindow(Gtk.Window):
             if(board.size <= N*M):
                 bN, bM = board.shape
                 if(bN < N and bM < M):
+                    # append
                     self.board = board
                     self.board = np.append(self.board, np.zeros((N-bN, bM), dtype=int), axis=0)
                     self.board = np.append(self.board, np.zeros((N,  M-bM), dtype=int), axis=1)
                 else:
+                    # wrap
                     self.board = np.append(board, np.zeros(N*M-board.size, dtype=int))
                 self.board.shape = (N, M)
             else:
+                # crop
                 bN, bM = board.shape
                 bN = min(bN, N)
                 bM = min(bM, M)
                 self.board = board[0:bN, 0:bM]
+                if(bN*bM < N*M):
+                    # and append
+                    self.board = np.append(self.board, np.zeros((N-bN, bM), dtype=int), axis=0)
+                    self.board = np.append(self.board, np.zeros((N,  M-bM), dtype=int), axis=1)
         else:
             self.board = np.zeros((N, M), dtype=int)
 
